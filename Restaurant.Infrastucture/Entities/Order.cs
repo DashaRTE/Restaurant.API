@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-
-namespace Restaurant.Infrastucture.Entities;
+﻿namespace Restaurant.Infrastucture.Entities;
 public class Order : Entity 
 {
     public int Number { get; set; }
