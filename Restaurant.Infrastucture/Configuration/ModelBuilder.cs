@@ -13,6 +13,18 @@ public static class ModelBuilder
             .OnDelete(DeleteBehavior.NoAction)
             .IsRequired();
 
+        builder.Property(static user => user.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(static user => user.Email)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(static user => user.Password)
+            .HasMaxLength(20)
+            .IsRequired();
+
         builder.Property(static chef => chef.CreationDate).HasDefaultValueSql("getutcdate()");
     }
     public static void BuildCustomer(EntityTypeBuilder<Customer> builder)
@@ -23,6 +35,18 @@ public static class ModelBuilder
             .OnDelete(DeleteBehavior.NoAction)
             .IsRequired();
 
+        builder.Property(static user => user.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(static user => user.Email)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(static user => user.Password)
+            .HasMaxLength(20)
+            .IsRequired();
+
         builder.Property(static customer => customer.CreationDate).HasDefaultValueSql("getutcdate()");
     }
     public static void BuildWaiter(EntityTypeBuilder<Waiter> builder)
@@ -31,6 +55,18 @@ public static class ModelBuilder
             .WithOne(order => order.Waiter)
             .HasForeignKey(waiter => waiter.WaiterId)
             .OnDelete(DeleteBehavior.NoAction)
+            .IsRequired();
+
+        builder.Property(static user => user.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(static user => user.Email)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(static user => user.Password)
+            .HasMaxLength(20)
             .IsRequired();
 
         builder.Property(static waiter => waiter.CreationDate).HasDefaultValueSql("getutcdate()");
@@ -44,21 +80,5 @@ public static class ModelBuilder
             .IsRequired();
 
         builder.Property(static table => table.CreationDate).HasDefaultValueSql("getutcdate()");
-    }
-    public static void BuildUser(EntityTypeBuilder<User> builder)
-    {
-        builder.Property(static user => user.Name)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(static user => user.Email)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(static user => user.Password)
-            .HasMaxLength(20)
-            .IsRequired();
-
-        builder.Property(static user => user.CreationDate).HasDefaultValueSql("getutcdate()");
     }
 }

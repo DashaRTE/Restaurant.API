@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Restaurant.Infrastucture;
+using Restaurant.Infrastucture.Repositories;
+using Restaurant.Infrastucture.Repositories.Interfaces;
 
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +26,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
-//builder.Services.AddScoped<ICrudOperation, CrudOperation>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 var app = builder.Build();
 

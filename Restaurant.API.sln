@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant.API", "Restaurant.API\Restaurant.API.csproj", "{D421CF07-EC06-4C3D-9110-3616C211CD05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restaurant.API", "Restaurant.API\Restaurant.API.csproj", "{D421CF07-EC06-4C3D-9110-3616C211CD05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant.Infrastucture", "Restaurant.Infrastucture\Restaurant.Infrastucture.csproj", "{7E867FC2-A753-4FE4-B2FC-EF160B2CB838}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restaurant.Infrastucture", "Restaurant.Infrastucture\Restaurant.Infrastucture.csproj", "{7E867FC2-A753-4FE4-B2FC-EF160B2CB838}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
