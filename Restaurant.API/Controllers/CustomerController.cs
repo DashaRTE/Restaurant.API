@@ -25,7 +25,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpPost, Route("create")]
-    public async Task<IActionResult> CreateCustomerAsync([Required, FromBody] CreateCustomerRequest Request)
+    public async Task<IActionResult> CreateCustomerAsync([Required, FromBody] CreateUserRequest Request)
     {
         var customer = await _customerRepository.CreateCustomerAsync(Request.Email, Request.Name, Request.Password);
         return Ok(customer);

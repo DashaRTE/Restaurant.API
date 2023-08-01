@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Restaurant.Infrastucture.Entities;
+﻿namespace Restaurant.Infrastucture.Entities;
 public class User : Entity
 {
     public User()

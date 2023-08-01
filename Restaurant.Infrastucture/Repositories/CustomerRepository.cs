@@ -29,6 +29,7 @@ public class CustomerRepository : ICustomerRepository
             customer.Email = Email;
             customer.Name = Name;
             customer.Password = Password;
+            customer.ModifiedDate = DateTime.UtcNow;
             await _dataContext.SaveChangesAsync();
         }
         return customer;
