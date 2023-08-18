@@ -8,4 +8,5 @@ public interface ICustomerRepository
     Task<Customer?> EditCustomerAsync(Guid CustomerId, string Email, string Name, string Password);
     Task DeleteCustomerAsync(Guid CustomerId);
     Task<Customer?> GetCustomerByIdAsync(Guid CustomerId);
+    Task<Customer?> GetCustomerOrdersAsync(Guid CustomerId);
 }

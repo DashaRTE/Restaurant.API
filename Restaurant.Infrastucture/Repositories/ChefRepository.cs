@@ -21,6 +21,7 @@ public class ChefRepository : IChefRepository
         await _dataContext.SaveChangesAsync();
         return chef;
     }
+
     public async Task<Chef?> EditChefAsync(Guid ChefId, string Email, string Name, string Password)
     {
         var chef = await _dataContext.Chefs.FindAsync(ChefId);
