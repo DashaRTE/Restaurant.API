@@ -25,7 +25,8 @@ public static class ModelBuilder
             .HasMaxLength(20)
             .IsRequired();
 
-        builder.Property(static chef => chef.CreationDate).HasDefaultValueSql("getutcdate()");
+        builder.Property(static chef => chef.CreationDate)
+	        .HasDefaultValueSql("getutcdate()");
     }
     public static void BuildCustomer(EntityTypeBuilder<Customer> builder)
     {
@@ -47,7 +48,8 @@ public static class ModelBuilder
             .HasMaxLength(20)
             .IsRequired();
 
-        builder.Property(static customer => customer.CreationDate).HasDefaultValueSql("getutcdate()");
+        builder.Property(static customer => customer.CreationDate)
+	        .HasDefaultValueSql("getutcdate()");
     }
     public static void BuildWaiter(EntityTypeBuilder<Waiter> builder)
     {
@@ -69,7 +71,8 @@ public static class ModelBuilder
             .HasMaxLength(20)
             .IsRequired();
 
-        builder.Property(static waiter => waiter.CreationDate).HasDefaultValueSql("getutcdate()");
+        builder.Property(static waiter => waiter.CreationDate)
+	        .HasDefaultValueSql("getutcdate()");
     }
     public static void BuildTable(EntityTypeBuilder<Table> builder)
     {
@@ -79,6 +82,20 @@ public static class ModelBuilder
             .OnDelete(DeleteBehavior.NoAction)
             .IsRequired();
 
-        builder.Property(static table => table.CreationDate).HasDefaultValueSql("getutcdate()");
+        builder.Property(static table => table.CreationDate)
+	        .HasDefaultValueSql("getutcdate()");
+    }
+
+    public static void BuildDish(EntityTypeBuilder<Dish> builder)
+    {
+	    builder.HasMany(dish => dish.Orders)
+		    .WithMany(order => order.Dishes);
+
+	    builder.Property(static dish => dish.Name)
+		    .HasMaxLength(100)
+		    .IsRequired();
+
+		builder.Property(static dish => dish.CreationDate)
+			.HasDefaultValueSql("getutcdate()");
     }
 }

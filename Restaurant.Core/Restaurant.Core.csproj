@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="UseCases\" />
-    <Folder Include="Domain\" />
-    <Folder Include="Interfaces\" />
+    <ProjectReference Include="..\Restaurant.Infrastucture\Restaurant.Infrastucture.csproj" />
   </ItemGroup>
 
 </Project>

@@ -12,4 +12,5 @@ public class Order : Entity
     public Customer Customer { get; set; }
     public Waiter Waiter { get; set; }
     public Table Table { get; set; }
+    public ICollection<Dish> Dishes { get; }
 }

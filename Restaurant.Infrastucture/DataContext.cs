@@ -16,14 +16,16 @@ public class DataContext : DbContext
     public virtual DbSet<Owner> Owners { get; set; }
     public virtual DbSet<Table> Tables { get; set; }
     public virtual DbSet<Waiter> Waiters { get; set; }
+    public virtual DbSet<Dish> Dishes { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder builder)
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(builder);
+        base.OnModelCreating(modelBuilder);
 
-        Configuration.ModelBuilder.BuildChef(builder.Entity<Chef>());
-        Configuration.ModelBuilder.BuildCustomer(builder.Entity<Customer>());
-        Configuration.ModelBuilder.BuildWaiter(builder.Entity<Waiter>());
-        Configuration.ModelBuilder.BuildTable(builder.Entity<Table>());
-    }
+        Configuration.ModelBuilder.BuildChef(modelBuilder.Entity<Chef>());
+        Configuration.ModelBuilder.BuildCustomer(modelBuilder.Entity<Customer>());
+        Configuration.ModelBuilder.BuildWaiter(modelBuilder.Entity<Waiter>());
+        Configuration.ModelBuilder.BuildTable(modelBuilder.Entity<Table>());
+        Configuration.ModelBuilder.BuildDish(modelBuilder.Entity<Dish>());
+	}
 }

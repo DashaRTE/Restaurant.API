@@ -45,12 +45,51 @@ public class OrderRepository : IOrderRepository
             return null;
         }
 
-        var order = new Order() { Number = Number, Price = Price, ChefId = ChefId, CustomerId = CustomerId, WaiterId = WaiterId, TableId = TableId };
+		var order = new Order() { Number = Number, Price = Price, ChefId = ChefId, CustomerId = CustomerId, WaiterId = WaiterId, TableId = TableId };
         await _dataContext.Orders.AddAsync(order);
         await _dataContext.SaveChangesAsync();
         return order;
     }
-    public async Task<Order?> EditOrderAsync(Guid OrderId, int Number, decimal Price, Guid ChefId, Guid CustomerId, Guid WaiterId, Guid TableId)
+
+    public async Task AddDishesAsync(Guid OrderId, Guid DishId)
+    {
+	    var order = await _dataContext.Orders.AsTracking()
+		    .Include(static order => order.Dishes)
+		    .FirstOrDefaultAsync(order => order.Id == OrderId);
+
+	    if (order is not null)
+	    {
+		    var dish = await _dataContext.Dishes.FindAsync(DishId);
+
+		    if (dish is not null)
+		    {
+			    order.Dishes.Add(dish);
+		    }
+
+		    await _dataContext.SaveChangesAsync();
+		}
+    }
+
+    public async Task RemoveDishesAsync(Guid OrderId, Guid DishId)
+    {
+		var order = await _dataContext.Orders.AsTracking()
+			.Include(static order => order.Dishes)
+			.FirstOrDefaultAsync(order => order.Id == OrderId);
+
+		if (order is not null)
+		{
+			var dish = await _dataContext.Dishes.FindAsync(DishId);
+
+			if (dish is not null)
+			{
+				order.Dishes.Remove(dish);
+			}
+
+			await _dataContext.SaveChangesAsync();
+		}
+    }
+
+	public async Task<Order?> EditOrderAsync(Guid OrderId, int Number, decimal Price, Guid ChefId, Guid CustomerId, Guid WaiterId, Guid TableId)
     {
         var chef = await _dataContext.Chefs.FindAsync(ChefId);
 
@@ -95,6 +134,7 @@ public class OrderRepository : IOrderRepository
         }
         return order;
     }
+
     public async Task<Order?> GetOrderByIdAsync(Guid OrderId)
     {
         var order = await _dataContext.Orders.FindAsync(OrderId);
@@ -104,4 +144,5 @@ public class OrderRepository : IOrderRepository
         }
         return null;
     }
+
 }
