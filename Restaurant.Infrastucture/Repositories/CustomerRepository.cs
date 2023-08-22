@@ -54,6 +54,7 @@ public class CustomerRepository : ICustomerRepository
 	public async Task<Customer?> GetCustomerByIdAsync(Guid CustomerId)
 	{
 		var customer = await _dataContext.Customers.FindAsync(CustomerId);
+
 		if (customer is not null)
 		{
 			return customer;

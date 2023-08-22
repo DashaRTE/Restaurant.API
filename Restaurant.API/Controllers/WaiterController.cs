@@ -1,7 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Requests;
-using Restaurant.Infrastucture.Repositories.Interfaces;
 using System.ComponentModel.DataAnnotations;
+using Restaurant.Core.UseCases.Waiter.Get;
+using Restaurant.Core;
+using Restaurant.Infrastucture.Entities;
+using Restaurant.Core.UseCases.Waiter.Create;
+using Restaurant.Core.UseCases.Waiter.Edit;
+using EditWaiterRequest = Restaurant.API.Requests.EditWaiterRequest;
+using Restaurant.Core.UseCases.Waiter.Delete;
+using Restaurant.Core.UseCases.Waiter.GetById;
 
 namespace Restaurant.API.Controllers;
 
@@ -11,45 +18,56 @@ namespace Restaurant.API.Controllers;
 
 public class WaiterController :ControllerBase
 {
-    private readonly IWaiterRepository _waiterRepository;
-    public WaiterController(IWaiterRepository waiterRepository)
-    {
-        _waiterRepository = waiterRepository;
-    }
+	private readonly CreateWaiterUseCase _createWaiterUseCase;
+	private readonly GetWaiterUseCase _getWaiterUseCase;
+	private readonly EditWaiterUseCase _editWaiterUseCase;
+	private readonly DeleteWaiterUseCase _deleteWaiterUseCase;
+	private readonly GetWaiterByIdUseCase _getWaiterByIdUseCase;
+
+	public WaiterController(GetWaiterUseCase getWaiterUseCase, CreateWaiterUseCase createWaiterUseCase, EditWaiterUseCase editWaiterUseCase, DeleteWaiterUseCase deleteWaiterUseCase, GetWaiterByIdUseCase getWaiterByIdUseCase)
+	{
+		_getWaiterUseCase = getWaiterUseCase;
+		_createWaiterUseCase = createWaiterUseCase;
+		_editWaiterUseCase = editWaiterUseCase;
+		_deleteWaiterUseCase = deleteWaiterUseCase;
+		_getWaiterByIdUseCase = getWaiterByIdUseCase;
+	}
 
     [HttpGet, Route("get")]
-    public async Task<IActionResult> GetWaitersAsync()
+    public async Task<Result<List<Waiter>>> GetWaitersAsync()
     {
-        var waiters = await _waiterRepository.GetWaitersAsync();
-        return Ok(waiters);
+        return await _getWaiterUseCase.HandleAsync();
     }
 
     [HttpPost, Route("create")]
-    public async Task<IActionResult> CreateWaiterAsync([Required, FromBody] CreateUserRequest Request)
+    public async Task<Result> CreateWaiterAsync([Required, FromBody] CreateUserRequest request)
     {
-        var waiter = await _waiterRepository.CreateWaiterAsync(Request.Email, Request.Name, Request.Password);
-        return Ok(waiter);
+        var result = await _createWaiterUseCase.HandleAsync(new(request.Name, request.Email, request.Password));
+
+        return result;
     }
+
     [HttpPut, Route("edit")]
-    public async Task<IActionResult> EditWaiterAsync([Required, FromBody] EditWaiterRequest Request)
-    {
-        var waiter = await _waiterRepository.EditWaiterAsync(Request.WaiterId, Request.Email, Request.Name, Request.Password);
-        return Ok(waiter);
-    }
-    [HttpDelete, Route("delete/{waiterId}")]
-    public async Task<IActionResult> DeleteWaiterAsync([Required] Guid waiterId)
-    {
-        await _waiterRepository.DeleteWaiterAsync(waiterId);
-        return Ok();
-    }
-    [HttpGet, Route("get/{waiterId}")]
-    public async Task<IActionResult> GetWaiterByIdAsync([Required] Guid waiterId)
-    {
-        var waiter = await _waiterRepository.GetWaiterByIdAsync(waiterId);
-        if (waiter is null)
-        {
-            return NotFound();
-        }
-        return Ok(waiter);
-    }
+    public async Task<Result> EditWaiterAsync([Required, FromBody] EditWaiterRequest request)
+	{
+		var result = await _editWaiterUseCase.HandleAsync(new(request.WaiterId , request.Name, request.Email, request.Password));
+		
+		return result;
+	}
+
+	[HttpDelete, Route("delete/{waiterId}")]
+	public async Task<Result> DeleteWaiterAsync([Required] Guid waiterId)
+	{
+		var result = await _deleteWaiterUseCase.HandleAsync(waiterId);
+
+		return result;
+	}
+
+	[HttpGet, Route("get/{waiterId}")]
+	public async Task<Result<Waiter>> GetWaiterByIdAsync([Required] Guid waiterId)
+	{
+		var result = await _getWaiterByIdUseCase.HandleAsync(waiterId);
+
+		return result;
+	}
 }

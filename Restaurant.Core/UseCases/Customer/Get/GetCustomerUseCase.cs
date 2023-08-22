@@ -1,7 +1,9 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.UseCases.Customer.Get;
+using Restaurant.Infrastucture.Repositories.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases;
+
 public class GetCustomerUseCase
 {
 	private readonly ICustomerRepository _customerRepository;
@@ -13,8 +15,13 @@ public class GetCustomerUseCase
 
 	public async Task<Result<List<Infrastucture.Entities.Customer>>> HandleAsync()
 	{
-		var result = await _customerRepository.GetCustomersAsync();
+		var customers = await _customerRepository.GetCustomersAsync();
 
-		return new () { StatusCode = HttpStatusCode.OK, Message = "Get customers", Data = result };
+		return new()
+		{
+			StatusCode = HttpStatusCode.OK,
+			Message = "Get customers",
+			Data = customers
+		};
 	}
 }

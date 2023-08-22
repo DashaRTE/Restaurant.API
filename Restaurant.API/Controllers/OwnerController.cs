@@ -1,8 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Requests;
+using Restaurant.Core;
+using Restaurant.Core.UseCases.Owner.Create;
+using Restaurant.Core.UseCases.Owner.Delete;
+using Restaurant.Core.UseCases.Owner.Edit;
+using Restaurant.Core.UseCases.Owner.Get;
+using Restaurant.Core.UseCases.Owner.GetById;
 using Restaurant.Infrastucture.Entities;
-using Restaurant.Infrastucture.Repositories.Interfaces;
 using System.ComponentModel.DataAnnotations;
+using EditOwnerRequest = Restaurant.API.Requests.EditOwnerRequest;
 
 namespace Restaurant.API.Controllers;
 
@@ -12,45 +18,56 @@ namespace Restaurant.API.Controllers;
 
 public class OwnerController : ControllerBase
 {
-    private readonly IOwnerRepository _ownerRepository;
-    public OwnerController(IOwnerRepository ownerRepository)
-    {
-        _ownerRepository = ownerRepository;
-    }
+    private readonly GetOwnerUseCase _getOwnerUseCase;
+    private readonly CreateOwnerUseCase _createOwnerUseCase;
+    private readonly EditOwnerUseCase _editOwnerUseCase;
+    private readonly DeleteOwnerUseCase _deleteOwnerUseCase;
+    private readonly GetOwnerByIdUseCase _getOwnerByIdUseCase;
+
+	public OwnerController(GetOwnerUseCase getOwnerUseCase, CreateOwnerUseCase createOwnerUseCase, EditOwnerUseCase editOwnerUseCase, DeleteOwnerUseCase deleteOwnerUseCase, GetOwnerByIdUseCase getOwnerByIdUseCase)
+	{
+		_getOwnerUseCase = getOwnerUseCase;
+		_createOwnerUseCase = createOwnerUseCase;
+		_editOwnerUseCase = editOwnerUseCase;
+		_deleteOwnerUseCase = deleteOwnerUseCase;
+		_getOwnerByIdUseCase = getOwnerByIdUseCase;
+	}
 
     [HttpGet, Route("get")]
-    public async Task<IActionResult> GetOwnersAsync()
+    public async Task<Result<List<Owner>>> GetOwnersAsync()
     {
-        var owners = await _ownerRepository.GetOwnersAsync();
-        return Ok(owners);
-    }
+		return await _getOwnerUseCase.HandleAsync();
+	}
 
     [HttpPost, Route("create")]
-    public async Task<IActionResult> CreateOwnerAsync([Required, FromBody] CreateUserRequest Request)
+    public async Task<Result> CreateOwnerAsync([Required, FromBody] CreateUserRequest request)
     {
-        var owner = await _ownerRepository.CreateOwnerAsync(Request.Email, Request.Name, Request.Password);
-        return Ok(owner);
+	    var result = await _createOwnerUseCase.HandleAsync(new(request.Name, request.Email, request.Password));
+	    
+	    return result;
     }
-    [HttpPut, Route("edit")]
-    public async Task<IActionResult> EditOwnerAsync([Required, FromBody] EditOwnerRequest Request)
-    {
-        var owner = await _ownerRepository.EditOwnerAsync(Request.OwnerId, Request.Email, Request.Name, Request.Password);
-        return Ok(owner);
-    }
-    [HttpDelete, Route("delete/{ownerId}")]
-    public async Task<IActionResult> DeleteOwnerAsync([Required] Guid ownerId)
-    {
-        await _ownerRepository.DeleteOwnerAsync(ownerId);
-        return Ok();
-    }
-    [HttpGet, Route("get/{ownerId}")]
-    public async Task<IActionResult> GetOwnerByIdAsync([Required] Guid ownerId)
-    {
-        var owner = await _ownerRepository.GetOwnerByIdAsync(ownerId);
-        if (owner is null)
-        {
-            return NotFound();
-        }
-        return Ok(owner);
-    }
+
+	[HttpPut, Route("edit")]
+	public async Task<Result> EditOwnerAsync([Required, FromBody] EditOwnerRequest request)
+	{
+		var result = await _editOwnerUseCase.HandleAsync(new(request.OwnerId, request.Name, request.Email, request.Password));
+
+		return result;
+	}
+
+	[HttpDelete, Route("delete/{ownerId}")]
+	public async Task<Result> DeleteOwnerAsync([Required] Guid ownerId)
+	{
+		var result = await _deleteOwnerUseCase.HandleAsync(ownerId);
+
+		return result;
+	}
+
+	[HttpGet, Route("get/{ownerId}")]
+	public async Task<Result<Owner>> GetOwnerByIdAsync([Required] Guid ownerId)
+	{
+		var result = await _getOwnerByIdUseCase.HandleAsync(ownerId);
+
+		return result;
+	}
 }

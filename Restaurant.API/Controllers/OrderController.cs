@@ -1,6 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Restaurant.API.Requests;
-using Restaurant.Infrastucture.Repositories.Interfaces;
+using Restaurant.Core;
+using Restaurant.Core.UseCases.Order.AddDishes;
+using Restaurant.Core.UseCases.Order.Create;
+using Restaurant.Core.UseCases.Order.Edit;
+using Restaurant.Core.UseCases.Order.Get;
+using Restaurant.Core.UseCases.Order.GetById;
+using Restaurant.Core.UseCases.Order.RemoveDishes;
+using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace Restaurant.API.Controllers;
@@ -10,46 +16,72 @@ namespace Restaurant.API.Controllers;
 [Route("api/order")]
 public class OrderController : ControllerBase
 {
-    private readonly IOrderRepository _orderRepository;
-    public OrderController(IOrderRepository orderRepository)
-    {
-        _orderRepository = orderRepository;
-    }
+	private readonly GetOrderUseCase _getOrderUseCase;
+	private readonly CreateOrderUseCase _createOrderUseCase;
+	private readonly EditOrderUseCase _editOrderUseCase;
+	private readonly GetOrderByIdUseCase _getOrderByIdUseCase;
+	private readonly AddDishesUseCase _addDishesUseCase;
+	private readonly RemoveDishesUseCase _removeDishesUseCase;
 
-    [HttpGet, Route("get")]
-    public async Task<IActionResult> GetOrdersAsync()
-    {
-        var orders = await _orderRepository.GetOrdersAsync();
-        
-        return Ok(orders);
-    }
+	public OrderController(
+		GetOrderUseCase getOrderUseCase, 
+		CreateOrderUseCase createOrderUseCase, 
+		EditOrderUseCase editOrderUseCase, 
+		GetOrderByIdUseCase getOrderByIdUseCase, AddDishesUseCase addDishesUseCase, RemoveDishesUseCase removeDishesUseCase)
+	{
+		_getOrderUseCase = getOrderUseCase;
+		_createOrderUseCase = createOrderUseCase;
+		_editOrderUseCase = editOrderUseCase;
+		_getOrderByIdUseCase = getOrderByIdUseCase;
+		_addDishesUseCase = addDishesUseCase;
+		_removeDishesUseCase = removeDishesUseCase;
+	}
 
-    [HttpPost, Route("create")]
-    public async Task<IActionResult> CreateOrderAsync([Required, FromBody] CreateOrderRequest Request)
-    {
-        var order = await _orderRepository.CreateOrderAsync(Request.Number, Request.Price, Request.ChefId, Request.CustomerId, Request.WaiterId, Request.TableId);
-        
-        return Ok(order);
-    }
+	[HttpGet, Route("get")]
+	public async Task<Result<List<Order>>> GetOrdersAsync()
+	{
+		return await _getOrderUseCase.HandleAsync();
+	}
 
-    [HttpPut, Route("edit")]
-    public async Task<IActionResult> EditOrderAsync([Required, FromBody] EditOrderRequest Request)
-    {
-        var order = await _orderRepository.EditOrderAsync( Request.OrderId, Request.Number, Request.Price, Request.ChefId, Request.CustomerId, Request.WaiterId, Request.TableId);
-        
-        return Ok(order);
-    }
+	[HttpPost, Route("create")]
+	public async Task<Result> CreateOrderAsync([Required, FromBody] Requests.CreateOrderRequest request)
+	{
+		var result = await _createOrderUseCase.HandleAsync(new(request.Number, request.Price, request.ChefId,
+			request.CustomerId, request.WaiterId, request.TableId));
 
-    [HttpGet, Route("get/{orderId}")]
-    public async Task<IActionResult> GetOrderByIdAsync([Required] Guid orderId)
-    {
-        var order = await _orderRepository.GetOrderByIdAsync(orderId);
+		return result;
+	}
 
-        if (order is null)
-        {
-            return NotFound();
-        }
+	[HttpPut, Route("edit")]
+	public async Task<Result> EditOrderAsync([Required, FromBody] Requests.EditOrderRequest request)
+	{
+		var result = await _editOrderUseCase.HandleAsync(new(request.OrderId, request.Number, request.Price,
+			request.ChefId, request.CustomerId, request.WaiterId, request.TableId));
 
-        return Ok(order);
-    }
+		return result;
+	}
+
+	[HttpGet, Route("get/{orderId}")]
+	public async Task<Result<Order>> GetOrderByIdAsync([Required] Guid orderId)
+	{
+		var result = await _getOrderByIdUseCase.HandleAsync(orderId);
+
+		return result;
+	}
+
+	[HttpPost, Route("addDishes/{orderId}")]
+	public async Task<Result> AddDishesAsync([Required, FromBody] Requests.AddDishesRequest request)
+	{
+		var result = await _addDishesUseCase.HandleAsync(new(request.OrderId, request.DishId));
+
+		return result;
+	}
+
+	[HttpDelete, Route("removeDishes/{orderId}")]
+	public async Task<Result> RemoveDishesAsync([Required, FromBody] Requests.RemoveDishesRequest request)
+	{
+		var result = await _removeDishesUseCase.HandleAsync(new(request.OrderId, request.DishId));
+
+		return result;
+	}
 }

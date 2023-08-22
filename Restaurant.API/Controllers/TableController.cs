@@ -1,7 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Restaurant.API.Requests;
-using Restaurant.API.Responses;
-using Restaurant.Infrastucture.Repositories.Interfaces;
+using Restaurant.Core;
+using Restaurant.Core.UseCases.Table.Create;
+using Restaurant.Core.UseCases.Table.Delete;
+using Restaurant.Core.UseCases.Table.Edit;
+using Restaurant.Core.UseCases.Table.Get;
+using Restaurant.Core.UseCases.Table.GetById;
+using Restaurant.Core.UseCases.Table.GetOrders;
+using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace Restaurant.API.Controllers;
@@ -11,64 +16,67 @@ namespace Restaurant.API.Controllers;
 [Route("api/table")]
 public class TableController : ControllerBase
 {
-	private readonly ITableRepository _tableRepository;
+	private readonly GetTableUseCase _getTableUseCase;
+	private readonly CreateTableUseCase _createTableUseCase;
+	private readonly EditTableUseCase _editTableUseCase;
+	private readonly DeleteTableUseCase _deleteTableUseCase;
+	private readonly GetTableByIdUseCase _getTableByIdUseCase;
+	private readonly GetTableOrdersUseCase _getTableOrdersUseCase;
 
-	public TableController(ITableRepository tableRepository)
+
+	public TableController(GetTableUseCase getTableUseCase, CreateTableUseCase createTableUseCase, EditTableUseCase editTableUseCase, DeleteTableUseCase deleteTableUseCase, GetTableByIdUseCase getTableByIdUseCase, GetTableOrdersUseCase getTableOrdersUseCase)
 	{
-		_tableRepository = tableRepository;
+		_getTableUseCase = getTableUseCase;
+		_createTableUseCase = createTableUseCase;
+		_editTableUseCase = editTableUseCase;
+		_deleteTableUseCase = deleteTableUseCase;
+		_getTableByIdUseCase = getTableByIdUseCase;
+		_getTableOrdersUseCase = getTableOrdersUseCase;
 	}
 
 	[HttpGet, Route("get")]
-	public async Task<IActionResult> GetTablesAsync()
+	public async Task<Result<List<Table>>> GetTablesAsync()
 	{
-		var tables = await _tableRepository.GetTablesAsync();
-		return Ok(tables);
+		return await _getTableUseCase.HandleAsync();
 	}
+	
 
 	[HttpPost, Route("create")]
-	public async Task<IActionResult> CreateTableAsync([Required, FromBody] int Number)
+	public async Task<Result> CreateTableAsync([Required, FromBody] int number)
 	{
-		var table = await _tableRepository.CreateTableAsync(Number);
-		return Ok(table);
+		var result = await _createTableUseCase.HandleAsync(number);
+		return result;
 	}
 
 	[HttpPut, Route("edit")]
-	public async Task<IActionResult> EditTableAsync([Required, FromBody] EditTableRequest Request)
+	public async Task<Result> EditTableAsync([Required, FromBody] EditTableRequest request)
 	{
-		var table = await _tableRepository.EditTableAsync(Request.TableId, Request.Number);
-		return Ok(table);
+		var result = await _editTableUseCase.HandleAsync(new(request.TableId, request.Number));
+
+		return result;
 	}
 
 	[HttpDelete, Route("delete/{tableId}")]
-	public async Task<IActionResult> DeleteTableAsync([Required] Guid tableId)
+	public async Task<Result> DeleteTableAsync([Required] Guid tableId)
 	{
-		await _tableRepository.DeleteTableAsync(tableId);
-		return Ok();
+		var result = await _deleteTableUseCase.HandleAsync(tableId);
+
+		return result;
 	}
 
 	[HttpGet, Route("get/{tableId}")]
-	public async Task<IActionResult> GetTableByIdAsync([Required] Guid tableId)
+	public async Task<Result<Table>> GetTableByIdAsync([Required] Guid tableId)
 	{
-		var table = await _tableRepository.GetTableByIdAsync(tableId);
-		if (table is null)
-		{
-			return NotFound();
-		}
+		var result = await _getTableByIdUseCase.HandleAsync(tableId);
 
-		return Ok(table);
+		return result;
 	}
 
 	[HttpGet, Route("get/orders/{tableId}")]
-	public async Task<IActionResult> GetTableOrdersAsync([Required] Guid tableId)
+	public async Task<Result<List<Order>>> GetTableOrdersAsync([Required] Guid tableId)
 	{
-		var table = await _tableRepository.GetTableOrdersAsync(tableId);
+		var result = await _getTableOrdersUseCase.HandleAsync(tableId);
 
-		if (table?.Orders is null)
-		{
-			return NotFound();
-		}
-
-		return Ok(new TableOrdersResponse(table.Number,
-			table.Orders.Select(order => new TableOrderResponse(order.Number, order.Price)).ToList()));
+		return result;
 	}
 }

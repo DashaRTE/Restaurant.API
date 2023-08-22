@@ -1,7 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Requests;
-using Restaurant.Infrastucture.Repositories.Interfaces;
+using Restaurant.Core;
+using Restaurant.Core.UseCases.Chef.Create;
+using Restaurant.Core.UseCases.Chef.Delete;
+using Restaurant.Core.UseCases.Chef.Edit;
+using Restaurant.Core.UseCases.Chef.Get;
+using Restaurant.Core.UseCases.Chef.GetById;
+using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
+using EditChefRequest = Restaurant.API.Requests.EditChefRequest;
 
 namespace Restaurant.API.Controllers;
 
@@ -11,45 +18,56 @@ namespace Restaurant.API.Controllers;
 
 public class ChefController : ControllerBase
 {
-    private readonly IChefRepository _chefRepository;
-    public ChefController(IChefRepository chefRepository)
-    {
-        _chefRepository = chefRepository;
-    }
+    private readonly GetChefUseCase _getChefUseCase;
+    private readonly CreateChefUseCase _createChefUseCase;
+    private readonly EditChefUseCase _editChefUseCase;
+    private readonly DeleteChefUseCase _deleteChefUseCase;
+    private readonly GetChefByIdUseCase _getChefByIdUseCase;
+
+	public ChefController(GetChefUseCase getChefUseCase, CreateChefUseCase createChefUseCase, EditChefUseCase editChefUseCase, DeleteChefUseCase deleteChefUseCase, GetChefByIdUseCase getChefByIdUseCase)
+	{
+		_getChefUseCase = getChefUseCase;
+		_createChefUseCase = createChefUseCase;
+		_editChefUseCase = editChefUseCase;
+		_deleteChefUseCase = deleteChefUseCase;
+		_getChefByIdUseCase = getChefByIdUseCase;
+	}
 
     [HttpGet, Route("get")]
-    public async Task<IActionResult> GetChefsAsync()
+    public async Task<Result<List<Chef>>> GetChefsAsync()
     {
-        var chefs = await _chefRepository.GetChefsAsync();
-        return Ok(chefs);
+	    return await _getChefUseCase.HandleAsync();
     }
 
-    [HttpPost, Route("create")]
-    public async Task<IActionResult> CreateChefAsync([Required, FromBody] CreateUserRequest Request)
-    {
-        var chef = await _chefRepository.CreateChefAsync(Request.Email, Request.Name, Request.Password);
-        return Ok(chef);
-    }
-    [HttpPut, Route("edit")]
-    public async Task<IActionResult> EditChefAsync([Required, FromBody] EditChefRequest Request)
-    {
-        var chef = await _chefRepository.EditChefAsync(Request.ChefId, Request.Email, Request.Name, Request.Password);
-        return Ok(chef);
-    }
-    [HttpDelete, Route("delete/{chefId}")]
-    public async Task<IActionResult> DeleteChefAsync([Required] Guid chefId)
-    {
-        await _chefRepository.DeleteChefAsync(chefId);
-        return Ok();
-    }
-    [HttpGet, Route("get/{chefId}")]
-    public async Task<IActionResult> GetChefByIdAsync([Required] Guid chefId)
-    {
-        var chef = await _chefRepository.GetChefByIdAsync(chefId);
-        if (chef is null)
-        {
-            return NotFound();
-        }
-        return Ok(chef);
-    }
+	[HttpPost, Route("create")]
+	public async Task<Result> CreateChefAsync([Required, FromBody] CreateUserRequest request)
+	{
+		var result = await _createChefUseCase.HandleAsync(new(request.Name, request.Email, request.Password));
+
+		return result;
+	}
+
+	[HttpPut, Route("edit")]
+	public async Task<Result> EditChefAsync([Required, FromBody] EditChefRequest Request)
+	{
+		var result = await _editChefUseCase.HandleAsync(new(Request.ChefId, Request.Name, Request.Email, Request.Password));
+
+		return result;
+	}
+
+	[HttpDelete, Route("delete/{chefId}")]
+	public async Task<Result> DeleteChefAsync([Required] Guid chefId)
+	{
+		var result = await _deleteChefUseCase.HandleAsync(chefId);
+
+		return result;
+	}
+
+	[HttpGet, Route("get/{chefId}")]
+	public async Task<Result<Chef>> GetChefByIdAsync([Required] Guid chefId)
+	{
+		var result = await _getChefByIdUseCase.HandleAsync(chefId);
+
+		return result;
+	}
 }
