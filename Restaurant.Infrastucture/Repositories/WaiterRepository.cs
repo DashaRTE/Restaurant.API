@@ -11,12 +11,9 @@ public class WaiterRepository : IWaiterRepository
         _dataContext = context;
     }
 
-    public async Task<List<Waiter>> GetWaitersAsync()
-    {
-        return await _dataContext.Waiters.ToListAsync();
-    }
+	public async Task<List<Waiter>> GetWaitersAsync() => await _dataContext.Waiters.ToListAsync();
 
-    public async Task<Waiter> CreateWaiterAsync(string Email, string Name, string Password)
+	public async Task<Waiter> CreateWaiterAsync(string Email, string Name, string Password)
     {
         var waiter = new Waiter() { Email = Email, Name = Name, Password = Password };
         await _dataContext.Waiters.AddAsync(waiter);
@@ -33,7 +30,10 @@ public class WaiterRepository : IWaiterRepository
             waiter.Name = Name;
             waiter.Password = Password;
             waiter.ModifiedDate = DateTime.UtcNow;
-            await _dataContext.SaveChangesAsync();
+
+            _dataContext.Entry(waiter).State = EntityState.Modified;
+
+			await _dataContext.SaveChangesAsync();
         }
         return waiter;
     }

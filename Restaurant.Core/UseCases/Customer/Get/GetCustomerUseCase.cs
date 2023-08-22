@@ -1,5 +1,4 @@
-﻿using Restaurant.Core.UseCases.Customer.Get;
-using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Infrastucture.Repositories.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases;

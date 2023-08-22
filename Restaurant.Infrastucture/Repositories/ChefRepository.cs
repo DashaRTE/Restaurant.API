@@ -35,7 +35,10 @@ public class ChefRepository : IChefRepository
             chef.Name = Name;
             chef.Password = Password;
             chef.ModifiedDate = DateTime.UtcNow;
-            await _dataContext.SaveChangesAsync();
+
+            _dataContext.Entry(chef).State = EntityState.Modified;
+
+			await _dataContext.SaveChangesAsync();
         }
 
         return chef;

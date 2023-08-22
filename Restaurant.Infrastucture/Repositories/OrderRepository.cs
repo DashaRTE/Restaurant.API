@@ -130,7 +130,10 @@ public class OrderRepository : IOrderRepository
             order.WaiterId = WaiterId;
             order.TableId = TableId;
             order.ModifiedDate = DateTime.UtcNow;
-            await _dataContext.SaveChangesAsync();
+
+            _dataContext.Entry(order).State = EntityState.Modified;
+
+			await _dataContext.SaveChangesAsync();
         }
         return order;
     }

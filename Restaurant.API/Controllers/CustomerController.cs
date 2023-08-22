@@ -5,7 +5,6 @@ using Restaurant.Core.UseCases;
 using Restaurant.Core.UseCases.Customer;
 using Restaurant.Core.UseCases.Customer.Delete;
 using Restaurant.Core.UseCases.Customer.Edit;
-using Restaurant.Core.UseCases.Customer.Get;
 using Restaurant.Core.UseCases.Customer.GetById;
 using Restaurant.Core.UseCases.Customer.GetOrders;
 using Restaurant.Infrastucture.Entities;

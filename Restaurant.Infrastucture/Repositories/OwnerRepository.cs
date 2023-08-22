@@ -30,6 +30,9 @@ public class OwnerRepository : IOwnerRepository
             owner.Name = Name;
             owner.Password = Password;
             owner.ModifiedDate = DateTime.UtcNow;
+
+            _dataContext.Entry(owner).State = EntityState.Modified;
+
             await _dataContext.SaveChangesAsync();
         }
         return owner;

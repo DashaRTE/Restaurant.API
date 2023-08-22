@@ -31,6 +31,9 @@ public class DishRepository : IDishRepository
 		{
 			dish.Name = Name;
 			dish.ModifiedDate = DateTime.UtcNow;
+
+			_dataContext.Entry(dish).State = EntityState.Modified;
+
 			await _dataContext.SaveChangesAsync();
 		}
 

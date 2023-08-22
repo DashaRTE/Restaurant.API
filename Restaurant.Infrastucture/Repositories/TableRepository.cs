@@ -34,6 +34,9 @@ public class TableRepository : ITableRepository
 		{
 			table.Number = Number;
 			table.ModifiedDate = DateTime.UtcNow;
+
+			_dataContext.Entry(table).State = EntityState.Modified;
+
 			await _dataContext.SaveChangesAsync();
 		}
 

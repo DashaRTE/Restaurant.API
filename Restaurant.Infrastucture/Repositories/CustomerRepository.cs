@@ -35,6 +35,9 @@ public class CustomerRepository : ICustomerRepository
 			customer.Name = Name;
 			customer.Password = Password;
 			customer.ModifiedDate = DateTime.UtcNow;
+
+			_dataContext.Entry(customer).State = EntityState.Modified;
+
 			await _dataContext.SaveChangesAsync();
 		}
 
