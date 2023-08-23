@@ -1,35 +1,46 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using Restaurant.Infrastucture.Entities;
-using Restaurant.Infrastucture.Repositories.Interfaces;
 
 namespace Restaurant.Infrastucture.Repositories;
+
 public class DishRepository : IDishRepository
 {
 	private readonly DataContext _dataContext;
-	public DishRepository(DataContext context)
+	private readonly IMapper _mapper;
+
+	public DishRepository(DataContext context, IMapper mapper)
 	{
 		_dataContext = context;
+		_mapper = mapper;
 	}
 
-	public async Task<List<Dish>> GetDishesAsync()
-	{
-		return await _dataContext.Dishes.ToListAsync();
-	}
+	public async Task<IList<DishDto>> GetDishesAsync() =>
+		_mapper.Map<IList<Dish>, IList<DishDto>>(await _dataContext.Dishes.ToListAsync());
 
-	public async Task<Dish> CreateDishAsync(string Name)
+	public async Task<DishDto?> GetDishByIdAsync(Guid dishId) =>
+		_mapper.Map<Dish?, DishDto?>(await _dataContext.Dishes.FindAsync(dishId));
+
+	public async Task<DishDto> CreateDishAsync(string name)
 	{
-		var dish = new Dish() { Name = Name };
+		var dish = new Dish() { Name = name };
+
 		await _dataContext.Dishes.AddAsync(dish);
+
 		await _dataContext.SaveChangesAsync();
-		return dish;
+
+		return _mapper.Map<Dish, DishDto>(dish);
 	}
 
-	public async Task<Dish> EditDishAsync(Guid DishId, string Name)
+	public async Task<DishDto> EditDishAsync(Guid dishId, string name)
 	{
-		var dish = await _dataContext.Dishes.FindAsync(DishId);
+		var dish = await _dataContext.Dishes.FindAsync(dishId);
+
 		if (dish is not null)
 		{
-			dish.Name = Name;
+			dish.Name = name;
 			dish.ModifiedDate = DateTime.UtcNow;
 
 			_dataContext.Entry(dish).State = EntityState.Modified;
@@ -37,28 +48,18 @@ public class DishRepository : IDishRepository
 			await _dataContext.SaveChangesAsync();
 		}
 
-		return dish;
+		return _mapper.Map<Dish?, DishDto>(dish);
 	}
 
-	public async Task DeleteDishAsync(Guid DishId)
-	{
-		var dish = await _dataContext.Dishes.FindAsync(DishId);
-		if (dish is not null)
-		{
-			_dataContext.Dishes.Remove(dish);
-			await _dataContext.SaveChangesAsync();
-		}
-	}
-
-	public async Task<Dish?> GetDishByIdAsync(Guid dishId)
+	public async Task DeleteDishAsync(Guid dishId)
 	{
 		var dish = await _dataContext.Dishes.FindAsync(dishId);
 
 		if (dish is not null)
 		{
-			return dish;
-		}
+			_dataContext.Dishes.Remove(dish);
 
-		return null;
+			await _dataContext.SaveChangesAsync();
+		}
 	}
 }

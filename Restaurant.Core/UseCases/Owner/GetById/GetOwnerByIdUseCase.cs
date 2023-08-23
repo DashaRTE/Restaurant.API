@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Owner.GetById;
@@ -11,15 +12,15 @@ public class GetOwnerByIdUseCase
 		_ownerRepository = ownerRepository;
 	}
 
-	public async Task<Result<Infrastucture.Entities.Owner>> HandleAsync(Guid ownerId)
+	public async Task<Result<OwnerDto>> HandleAsync(Guid ownerId)
 	{
-		var result = await _ownerRepository.GetOwnerByIdAsync(ownerId);
+		var owner = await _ownerRepository.GetOwnerByIdAsync(ownerId);
 
-		if (result is null)
+		if (owner is null)
 		{
 			return new() { StatusCode = HttpStatusCode.NotFound, Message = "Not found" };
 		}
 
-		return new() { StatusCode = HttpStatusCode.OK, Message = "Get owner by id", Data = result };
+		return new() { StatusCode = HttpStatusCode.OK, Message = "Get owner by id", Data = owner };
 	}
 }

@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\С#Restaurantt\Restaurant.API\Restaurant.Core\Restaurant.Core.csproj" />
     <ProjectReference Include="..\Restaurant.Core\Restaurant.Core.csproj" />
     <ProjectReference Include="..\Restaurant.Infrastucture\Restaurant.Infrastucture.csproj" />
   </ItemGroup>

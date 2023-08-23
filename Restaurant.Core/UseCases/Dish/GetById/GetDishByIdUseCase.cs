@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Dish.GetById;
@@ -11,15 +12,15 @@ public class GetDishByIdUseCase
 		_dishRepository = dishRepository;
 	}
 
-	public async Task<Result<Infrastucture.Entities.Dish>> HandleAsync(Guid dishId)
+	public async Task<Result<DishDto>> HandleAsync(Guid dishId)
 	{
-		var result = await _dishRepository.GetDishByIdAsync(dishId);
+		var dish = await _dishRepository.GetDishByIdAsync(dishId);
 
-		if (result is null)
+		if (dish is null)
 		{
-			return new() { StatusCode = HttpStatusCode.NotFound, Message = "Not found" };
+			return new() { StatusCode = HttpStatusCode.NotFound, Message = "Not found dish" };
 		}
 
-		return new() { StatusCode = HttpStatusCode.OK, Message = "Get dish by id", Data = result };
+		return new() { StatusCode = HttpStatusCode.OK, Message = "Get dish by id", Data = dish };
 	}
 }

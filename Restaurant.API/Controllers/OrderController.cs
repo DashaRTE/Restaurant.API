@@ -6,8 +6,8 @@ using Restaurant.Core.UseCases.Order.Edit;
 using Restaurant.Core.UseCases.Order.Get;
 using Restaurant.Core.UseCases.Order.GetById;
 using Restaurant.Core.UseCases.Order.RemoveDishes;
-using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Restaurant.API.Controllers;
 
@@ -27,7 +27,9 @@ public class OrderController : ControllerBase
 		GetOrderUseCase getOrderUseCase, 
 		CreateOrderUseCase createOrderUseCase, 
 		EditOrderUseCase editOrderUseCase, 
-		GetOrderByIdUseCase getOrderByIdUseCase, AddDishesUseCase addDishesUseCase, RemoveDishesUseCase removeDishesUseCase)
+		GetOrderByIdUseCase getOrderByIdUseCase, 
+		AddDishesUseCase addDishesUseCase, 
+		RemoveDishesUseCase removeDishesUseCase)
 	{
 		_getOrderUseCase = getOrderUseCase;
 		_createOrderUseCase = createOrderUseCase;
@@ -38,9 +40,24 @@ public class OrderController : ControllerBase
 	}
 
 	[HttpGet, Route("get")]
-	public async Task<Result<List<Order>>> GetOrdersAsync()
+	public async Task<ContentResult> GetOrdersAsync()
 	{
-		return await _getOrderUseCase.HandleAsync();
+		var result = await _getOrderUseCase.HandleAsync();
+
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 
 	[HttpPost, Route("create")]
@@ -62,11 +79,24 @@ public class OrderController : ControllerBase
 	}
 
 	[HttpGet, Route("get/{orderId}")]
-	public async Task<Result<Order>> GetOrderByIdAsync([Required] Guid orderId)
+	public async Task<ContentResult> GetOrderByIdAsync([Required] Guid orderId)
 	{
 		var result = await _getOrderByIdUseCase.HandleAsync(orderId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 
 	[HttpPost, Route("addDishes/{orderId}")]

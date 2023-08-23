@@ -6,8 +6,8 @@ using Restaurant.Core.UseCases.Table.Edit;
 using Restaurant.Core.UseCases.Table.Get;
 using Restaurant.Core.UseCases.Table.GetById;
 using Restaurant.Core.UseCases.Table.GetOrders;
-using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Restaurant.API.Controllers;
 
@@ -24,7 +24,12 @@ public class TableController : ControllerBase
 	private readonly GetTableOrdersUseCase _getTableOrdersUseCase;
 
 
-	public TableController(GetTableUseCase getTableUseCase, CreateTableUseCase createTableUseCase, EditTableUseCase editTableUseCase, DeleteTableUseCase deleteTableUseCase, GetTableByIdUseCase getTableByIdUseCase, GetTableOrdersUseCase getTableOrdersUseCase)
+	public TableController(GetTableUseCase getTableUseCase, 
+		CreateTableUseCase createTableUseCase, 
+		EditTableUseCase editTableUseCase, 
+		DeleteTableUseCase deleteTableUseCase, 
+		GetTableByIdUseCase getTableByIdUseCase, 
+		GetTableOrdersUseCase getTableOrdersUseCase)
 	{
 		_getTableUseCase = getTableUseCase;
 		_createTableUseCase = createTableUseCase;
@@ -35,9 +40,24 @@ public class TableController : ControllerBase
 	}
 
 	[HttpGet, Route("get")]
-	public async Task<Result<List<Table>>> GetTablesAsync()
+	public async Task<ContentResult> GetTablesAsync()
 	{
-		return await _getTableUseCase.HandleAsync();
+		var result = await _getTableUseCase.HandleAsync();
+
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 	
 
@@ -65,18 +85,44 @@ public class TableController : ControllerBase
 	}
 
 	[HttpGet, Route("get/{tableId}")]
-	public async Task<Result<Table>> GetTableByIdAsync([Required] Guid tableId)
+	public async Task<ContentResult> GetTableByIdAsync([Required] Guid tableId)
 	{
 		var result = await _getTableByIdUseCase.HandleAsync(tableId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 
 	[HttpGet, Route("get/orders/{tableId}")]
-	public async Task<Result<List<Order>>> GetTableOrdersAsync([Required] Guid tableId)
+	public async Task<ContentResult> GetTableOrdersAsync([Required] Guid tableId)
 	{
 		var result = await _getTableOrdersUseCase.HandleAsync(tableId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 }

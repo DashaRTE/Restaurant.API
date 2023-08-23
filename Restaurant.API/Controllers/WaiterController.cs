@@ -3,12 +3,11 @@ using Restaurant.API.Requests;
 using System.ComponentModel.DataAnnotations;
 using Restaurant.Core.UseCases.Waiter.Get;
 using Restaurant.Core;
-using Restaurant.Infrastucture.Entities;
 using Restaurant.Core.UseCases.Waiter.Create;
 using Restaurant.Core.UseCases.Waiter.Edit;
-using EditWaiterRequest = Restaurant.API.Requests.EditWaiterRequest;
 using Restaurant.Core.UseCases.Waiter.Delete;
 using Restaurant.Core.UseCases.Waiter.GetById;
+using System.Text.Json;
 
 namespace Restaurant.API.Controllers;
 
@@ -24,7 +23,11 @@ public class WaiterController :ControllerBase
 	private readonly DeleteWaiterUseCase _deleteWaiterUseCase;
 	private readonly GetWaiterByIdUseCase _getWaiterByIdUseCase;
 
-	public WaiterController(GetWaiterUseCase getWaiterUseCase, CreateWaiterUseCase createWaiterUseCase, EditWaiterUseCase editWaiterUseCase, DeleteWaiterUseCase deleteWaiterUseCase, GetWaiterByIdUseCase getWaiterByIdUseCase)
+	public WaiterController(GetWaiterUseCase getWaiterUseCase, 
+		CreateWaiterUseCase createWaiterUseCase,
+		EditWaiterUseCase editWaiterUseCase, 
+		DeleteWaiterUseCase deleteWaiterUseCase, 
+		GetWaiterByIdUseCase getWaiterByIdUseCase)
 	{
 		_getWaiterUseCase = getWaiterUseCase;
 		_createWaiterUseCase = createWaiterUseCase;
@@ -34,10 +37,25 @@ public class WaiterController :ControllerBase
 	}
 
     [HttpGet, Route("get")]
-    public async Task<Result<List<Waiter>>> GetWaitersAsync()
+    public async Task<ContentResult> GetWaitersAsync()
     {
-        return await _getWaiterUseCase.HandleAsync();
-    }
+        var result = await _getWaiterUseCase.HandleAsync();
+
+        var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+        {
+	        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+	        WriteIndented = true,
+        });
+
+        var content = new ContentResult()
+        {
+	        Content = json,
+	        ContentType = "application/json",
+	        StatusCode = (int)result.StatusCode
+        };
+
+        return content;
+	}
 
     [HttpPost, Route("create")]
     public async Task<Result> CreateWaiterAsync([Required, FromBody] CreateUserRequest request)
@@ -48,7 +66,7 @@ public class WaiterController :ControllerBase
     }
 
     [HttpPut, Route("edit")]
-    public async Task<Result> EditWaiterAsync([Required, FromBody] EditWaiterRequest request)
+    public async Task<Result> EditWaiterAsync([Required, FromBody] Requests.EditWaiterRequest request)
 	{
 		var result = await _editWaiterUseCase.HandleAsync(new(request.WaiterId , request.Name, request.Email, request.Password));
 		
@@ -64,10 +82,23 @@ public class WaiterController :ControllerBase
 	}
 
 	[HttpGet, Route("get/{waiterId}")]
-	public async Task<Result<Waiter>> GetWaiterByIdAsync([Required] Guid waiterId)
+	public async Task<ContentResult> GetWaiterByIdAsync([Required] Guid waiterId)
 	{
 		var result = await _getWaiterByIdUseCase.HandleAsync(waiterId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 }

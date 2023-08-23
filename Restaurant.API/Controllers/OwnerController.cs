@@ -6,9 +6,8 @@ using Restaurant.Core.UseCases.Owner.Delete;
 using Restaurant.Core.UseCases.Owner.Edit;
 using Restaurant.Core.UseCases.Owner.Get;
 using Restaurant.Core.UseCases.Owner.GetById;
-using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
-using EditOwnerRequest = Restaurant.API.Requests.EditOwnerRequest;
+using System.Text.Json;
 
 namespace Restaurant.API.Controllers;
 
@@ -24,7 +23,11 @@ public class OwnerController : ControllerBase
     private readonly DeleteOwnerUseCase _deleteOwnerUseCase;
     private readonly GetOwnerByIdUseCase _getOwnerByIdUseCase;
 
-	public OwnerController(GetOwnerUseCase getOwnerUseCase, CreateOwnerUseCase createOwnerUseCase, EditOwnerUseCase editOwnerUseCase, DeleteOwnerUseCase deleteOwnerUseCase, GetOwnerByIdUseCase getOwnerByIdUseCase)
+	public OwnerController(GetOwnerUseCase getOwnerUseCase, 
+		CreateOwnerUseCase createOwnerUseCase, 
+		EditOwnerUseCase editOwnerUseCase,
+		DeleteOwnerUseCase deleteOwnerUseCase, 
+		GetOwnerByIdUseCase getOwnerByIdUseCase)
 	{
 		_getOwnerUseCase = getOwnerUseCase;
 		_createOwnerUseCase = createOwnerUseCase;
@@ -34,9 +37,24 @@ public class OwnerController : ControllerBase
 	}
 
     [HttpGet, Route("get")]
-    public async Task<Result<List<Owner>>> GetOwnersAsync()
+    public async Task<ContentResult> GetOwnersAsync()
     {
-		return await _getOwnerUseCase.HandleAsync();
+		var result = await _getOwnerUseCase.HandleAsync();
+
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 
     [HttpPost, Route("create")]
@@ -48,7 +66,7 @@ public class OwnerController : ControllerBase
     }
 
 	[HttpPut, Route("edit")]
-	public async Task<Result> EditOwnerAsync([Required, FromBody] EditOwnerRequest request)
+	public async Task<Result> EditOwnerAsync([Required, FromBody] Requests.EditOwnerRequest request)
 	{
 		var result = await _editOwnerUseCase.HandleAsync(new(request.OwnerId, request.Name, request.Email, request.Password));
 
@@ -64,10 +82,23 @@ public class OwnerController : ControllerBase
 	}
 
 	[HttpGet, Route("get/{ownerId}")]
-	public async Task<Result<Owner>> GetOwnerByIdAsync([Required] Guid ownerId)
+	public async Task<ContentResult> GetOwnerByIdAsync([Required] Guid ownerId)
 	{
 		var result = await _getOwnerByIdUseCase.HandleAsync(ownerId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 }

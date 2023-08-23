@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Owner.Get;
@@ -11,10 +12,10 @@ public class GetOwnerUseCase
 		_ownerRepository = ownerRepository;
 	}
 
-	public async Task<Result<List<Infrastucture.Entities.Owner>>> HandleAsync()
+	public async Task<Result<IList<OwnerDto>>> HandleAsync()
 	{
-		var result = await _ownerRepository.GetOwnersAsync();
+		var owners = await _ownerRepository.GetOwnersAsync();
 
-		return new() { StatusCode = HttpStatusCode.OK, Message = "Get owners", Data = result };
+		return new() { StatusCode = HttpStatusCode.OK, Message = "Get owners", Data = owners };
 	}
 }

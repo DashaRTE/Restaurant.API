@@ -6,9 +6,8 @@ using Restaurant.Core.UseCases.Chef.Delete;
 using Restaurant.Core.UseCases.Chef.Edit;
 using Restaurant.Core.UseCases.Chef.Get;
 using Restaurant.Core.UseCases.Chef.GetById;
-using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
-using EditChefRequest = Restaurant.API.Requests.EditChefRequest;
+using System.Text.Json;
 
 namespace Restaurant.API.Controllers;
 
@@ -24,7 +23,11 @@ public class ChefController : ControllerBase
     private readonly DeleteChefUseCase _deleteChefUseCase;
     private readonly GetChefByIdUseCase _getChefByIdUseCase;
 
-	public ChefController(GetChefUseCase getChefUseCase, CreateChefUseCase createChefUseCase, EditChefUseCase editChefUseCase, DeleteChefUseCase deleteChefUseCase, GetChefByIdUseCase getChefByIdUseCase)
+	public ChefController(GetChefUseCase getChefUseCase, 
+		CreateChefUseCase createChefUseCase, 
+		EditChefUseCase editChefUseCase, 
+		DeleteChefUseCase deleteChefUseCase, 
+		GetChefByIdUseCase getChefByIdUseCase)
 	{
 		_getChefUseCase = getChefUseCase;
 		_createChefUseCase = createChefUseCase;
@@ -34,10 +37,25 @@ public class ChefController : ControllerBase
 	}
 
     [HttpGet, Route("get")]
-    public async Task<Result<List<Chef>>> GetChefsAsync()
+    public async Task<ContentResult> GetChefsAsync()
     {
-	    return await _getChefUseCase.HandleAsync();
-    }
+	    var result =  await _getChefUseCase.HandleAsync();
+
+	    var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+	    {
+		    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+		    WriteIndented = true,
+	    });
+
+	    var content = new ContentResult()
+	    {
+		    Content = json,
+		    ContentType = "application/json",
+		    StatusCode = (int)result.StatusCode
+	    };
+
+	    return content;
+	}
 
 	[HttpPost, Route("create")]
 	public async Task<Result> CreateChefAsync([Required, FromBody] CreateUserRequest request)
@@ -48,7 +66,7 @@ public class ChefController : ControllerBase
 	}
 
 	[HttpPut, Route("edit")]
-	public async Task<Result> EditChefAsync([Required, FromBody] EditChefRequest Request)
+	public async Task<Result> EditChefAsync([Required, FromBody] Requests.EditChefRequest Request)
 	{
 		var result = await _editChefUseCase.HandleAsync(new(Request.ChefId, Request.Name, Request.Email, Request.Password));
 
@@ -64,10 +82,23 @@ public class ChefController : ControllerBase
 	}
 
 	[HttpGet, Route("get/{chefId}")]
-	public async Task<Result<Chef>> GetChefByIdAsync([Required] Guid chefId)
+	public async Task<ContentResult> GetChefByIdAsync([Required] Guid chefId)
 	{
 		var result = await _getChefByIdUseCase.HandleAsync(chefId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 }

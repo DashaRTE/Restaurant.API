@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Table.GetById;
@@ -11,7 +12,7 @@ public class GetTableByIdUseCase
 		_tableRepository = tableRepository;
 	}
 
-	public async Task<Result<Infrastucture.Entities.Table>> HandleAsync(Guid tableId)
+	public async Task<Result<TableDto>> HandleAsync(Guid tableId)
 	{
 		var table = await _tableRepository.GetTableByIdAsync(tableId);
 

@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Dish.Get;
@@ -11,10 +12,10 @@ public class GetDishUseCase
 		_dishRepository = dishRepository;
 	}
 
-	public async Task<Result<List<Infrastucture.Entities.Dish>>> HandleAsync()
+	public async Task<Result<IList<DishDto>>> HandleAsync()
 	{
-		var result = await _dishRepository.GetDishesAsync();
+		var dishes = await _dishRepository.GetDishesAsync();
 
-		return new() { StatusCode = HttpStatusCode.OK, Message = "Get dishes", Data = result };
+		return new() { StatusCode = HttpStatusCode.OK, Message = "Get dishes", Data = dishes };
 	}
 }

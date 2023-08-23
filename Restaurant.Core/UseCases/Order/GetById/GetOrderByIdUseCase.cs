@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Order.GetById;
@@ -11,7 +12,7 @@ public class GetOrderByIdUseCase
 		_orderRepository = orderRepository;
 	}
 
-	public async Task<Result<Infrastucture.Entities.Order>> HandleAsync(Guid orderId)
+	public async Task<Result<OrderDto>> HandleAsync(Guid orderId)
 	{
 		var order = await _orderRepository.GetOrderByIdAsync(orderId);
 

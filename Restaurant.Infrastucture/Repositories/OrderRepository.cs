@@ -1,84 +1,103 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using Restaurant.Infrastucture.Entities;
-using Restaurant.Infrastucture.Repositories.Interfaces;
 
 namespace Restaurant.Infrastucture.Repositories;
+
 public class OrderRepository : IOrderRepository
 {
-    private readonly DataContext _dataContext;
-    public OrderRepository(DataContext context)
-    {
-        _dataContext = context;
-    }
-    public async Task<List<Order>> GetOrdersAsync()
-    {
-        return await _dataContext.Orders.ToListAsync();
-    }
+	private readonly DataContext _dataContext;
+	private readonly IMapper _mapper;
 
-    public async Task<Order?> CreateOrderAsync(int Number, decimal Price, Guid ChefId, Guid CustomerId, Guid WaiterId, Guid TableId)
-    {
-        var chef = await _dataContext.Chefs.FindAsync(ChefId);
+	public OrderRepository(DataContext context, IMapper mapper)
+	{
+		_dataContext = context;
+		_mapper = mapper;
+	}
 
-        if (chef is null) 
-        {
-            return null;
-        }
+	public async Task<IList<OrderDto>> GetOrdersAsync() =>
+		_mapper.Map<IList<Order>, IList<OrderDto>>(await _dataContext.Orders.ToListAsync());
 
-        var customer = await _dataContext.Customers.FindAsync(CustomerId);
+	public async Task<OrderDto?> GetOrderByIdAsync(Guid orderId) =>
+		_mapper.Map<Order?, OrderDto?>(await _dataContext.Orders.FindAsync(orderId));
 
-        if (customer is null)
-        {
-            return null;
-        }
+	public async Task<OrderDto?> CreateOrderAsync(int number, decimal price, Guid chefId, Guid customerId, Guid waiterId, Guid tableId)
+	{
+		var chef = await _dataContext.Chefs.FindAsync(chefId);
 
-        var waiter = await _dataContext.Waiters.FindAsync(WaiterId);
-
-        if (waiter is null)
-        {
-            return null;
-        }
-
-        var table = await _dataContext.Tables.FindAsync(TableId);
-
-        if (table is null)
-        {
-            return null;
-        }
-
-		var order = new Order() { Number = Number, Price = Price, ChefId = ChefId, CustomerId = CustomerId, WaiterId = WaiterId, TableId = TableId };
-        await _dataContext.Orders.AddAsync(order);
-        await _dataContext.SaveChangesAsync();
-        return order;
-    }
-
-    public async Task AddDishesAsync(Guid OrderId, Guid DishId)
-    {
-	    var order = await _dataContext.Orders.AsTracking()
-		    .Include(static order => order.Dishes)
-		    .FirstOrDefaultAsync(order => order.Id == OrderId);
-
-	    if (order is not null)
-	    {
-		    var dish = await _dataContext.Dishes.FindAsync(DishId);
-
-		    if (dish is not null)
-		    {
-			    order.Dishes.Add(dish);
-		    }
-
-		    await _dataContext.SaveChangesAsync();
+		if (chef is null)
+		{
+			return null;
 		}
-    }
 
-    public async Task RemoveDishesAsync(Guid OrderId, Guid DishId)
-    {
+		var customer = await _dataContext.Customers.FindAsync(customerId);
+
+		if (customer is null)
+		{
+			return null;
+		}
+
+		var waiter = await _dataContext.Waiters.FindAsync(waiterId);
+
+		if (waiter is null)
+		{
+			return null;
+		}
+
+		var table = await _dataContext.Tables.FindAsync(tableId);
+
+		if (table is null)
+		{
+			return null;
+		}
+
+		var order = new Order
+		{
+			Number = number,
+			Price = price,
+			ChefId = chefId,
+			CustomerId = customerId,
+			WaiterId = waiterId,
+			TableId = tableId
+		};
+
+		await _dataContext.Orders.AddAsync(order);
+
+		await _dataContext.SaveChangesAsync();
+
+		return _mapper.Map<Order, OrderDto>(order);
+	}
+
+	public async Task AddDishesAsync(Guid orderId, Guid dishId)
+	{
 		var order = await _dataContext.Orders.AsTracking()
 			.Include(static order => order.Dishes)
-			.FirstOrDefaultAsync(order => order.Id == OrderId);
+			.FirstOrDefaultAsync(order => order.Id == orderId);
 
 		if (order is not null)
 		{
-			var dish = await _dataContext.Dishes.FindAsync(DishId);
+			var dish = await _dataContext.Dishes.FindAsync(dishId);
+
+			if (dish is not null)
+			{
+				order.Dishes.Add(dish);
+			}
+
+			await _dataContext.SaveChangesAsync();
+		}
+	}
+
+	public async Task RemoveDishesAsync(Guid orderId, Guid dishId)
+	{
+		var order = await _dataContext.Orders.AsTracking()
+			.Include(static order => order.Dishes)
+			.FirstOrDefaultAsync(order => order.Id == orderId);
+
+		if (order is not null)
+		{
+			var dish = await _dataContext.Dishes.FindAsync(dishId);
 
 			if (dish is not null)
 			{
@@ -87,65 +106,56 @@ public class OrderRepository : IOrderRepository
 
 			await _dataContext.SaveChangesAsync();
 		}
-    }
+	}
 
-	public async Task<Order?> EditOrderAsync(Guid OrderId, int Number, decimal Price, Guid ChefId, Guid CustomerId, Guid WaiterId, Guid TableId)
-    {
-        var chef = await _dataContext.Chefs.FindAsync(ChefId);
+	public async Task<OrderDto?> EditOrderAsync(Guid orderId, int number, decimal price, Guid chefId, Guid customerId,
+		Guid waiterId, Guid tableId)
+	{
+		var chef = await _dataContext.Chefs.FindAsync(chefId);
 
-        if (chef is null)
-        {
-            return null;
-        }
+		if (chef is null)
+		{
+			return null;
+		}
 
-        var customer = await _dataContext.Customers.FindAsync(CustomerId);
+		var customer = await _dataContext.Customers.FindAsync(customerId);
 
-        if (customer is null)
-        {
-            return null;
-        }
+		if (customer is null)
+		{
+			return null;
+		}
 
-        var waiter = await _dataContext.Waiters.FindAsync(WaiterId);
+		var waiter = await _dataContext.Waiters.FindAsync(waiterId);
 
-        if (waiter is null)
-        {
-            return null;
-        }
+		if (waiter is null)
+		{
+			return null;
+		}
 
-        var table = await _dataContext.Tables.FindAsync(TableId);
+		var table = await _dataContext.Tables.FindAsync(tableId);
 
-        if (table is null)
-        {
-            return null;
-        }
+		if (table is null)
+		{
+			return null;
+		}
 
-        var order = await _dataContext.Orders.FindAsync(OrderId);
+		var order = await _dataContext.Orders.FindAsync(orderId);
 
-        if (order is not null)
-        {
-            order.Number = Number;
-            order.Price = Price;
-            order.ChefId = ChefId;
-            order.CustomerId = CustomerId;
-            order.WaiterId = WaiterId;
-            order.TableId = TableId;
-            order.ModifiedDate = DateTime.UtcNow;
+		if (order is not null)
+		{
+			order.Number = number;
+			order.Price = price;
+			order.ChefId = chefId;
+			order.CustomerId = customerId;
+			order.WaiterId = waiterId;
+			order.TableId = tableId;
+			order.ModifiedDate = DateTime.UtcNow;
 
-            _dataContext.Entry(order).State = EntityState.Modified;
+			_dataContext.Entry(order).State = EntityState.Modified;
 
 			await _dataContext.SaveChangesAsync();
-        }
-        return order;
-    }
+		}
 
-    public async Task<Order?> GetOrderByIdAsync(Guid OrderId)
-    {
-        var order = await _dataContext.Orders.FindAsync(OrderId);
-        if (order is not null)
-        {
-            return order;
-        }
-        return null;
-    }
-
+		return _mapper.Map<Order?, OrderDto?>(order);
+	}
 }

@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Table.GetOrders;
@@ -11,17 +12,15 @@ public class GetTableOrdersUseCase
 		_tableRepository = tableRepository;
 	}
 
-	public async Task<Result<List<Infrastucture.Entities.Order>>> HandleAsync(Guid tableId)
+	public async Task<Result<IList<OrderDto>>> HandleAsync(Guid tableId)
 	{
-		var result = await _tableRepository.GetTableOrdersAsync(tableId);
+		var table = await _tableRepository.GetTableOrdersAsync(tableId);
 
-		if (result is null)
+		if (table is null)
 		{
 			return new() { StatusCode = HttpStatusCode.NotFound, Message = "Not found" };
 		}
 
-		var orders = result.Orders.ToList();
-
-		return new() { StatusCode = HttpStatusCode.OK, Message = "Get table orders", Data = orders };
+		return new() { StatusCode = HttpStatusCode.OK, Message = "Get table orders", Data = table.Orders };
 	}
 }

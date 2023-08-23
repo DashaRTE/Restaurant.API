@@ -7,8 +7,8 @@ using Restaurant.Core.UseCases.Customer.Delete;
 using Restaurant.Core.UseCases.Customer.Edit;
 using Restaurant.Core.UseCases.Customer.GetById;
 using Restaurant.Core.UseCases.Customer.GetOrders;
-using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Restaurant.API.Controllers;
 
@@ -41,7 +41,26 @@ public class CustomerController : ControllerBase
 	}
 
 	[HttpGet, Route("get")]
-	public async Task<Result<List<Customer>>> GetCustomersAsync() => await _getCustomerUseCase.HandleAsync();
+	public async Task<ContentResult> GetCustomersAsync()
+	{
+		var result = await _getCustomerUseCase.HandleAsync();
+
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
+	}
+	
 
 	[HttpPost, Route("create")]
 	public async Task<Result> CreateCustomerAsync([Required, FromBody] CreateUserRequest request)
@@ -68,18 +87,44 @@ public class CustomerController : ControllerBase
 	}
 
 	[HttpGet, Route("get/{customerId}")]
-	public async Task<Result<Customer>> GetCustomerByIdAsync([Required] Guid customerId)
+	public async Task<ContentResult> GetCustomerByIdAsync([Required] Guid customerId)
 	{
 		var result = await _getCustomerByIdUseCase.HandleAsync(customerId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 
 	[HttpGet, Route("get/orders/{customerId}")]
-	public async Task<Result<List<Order>>> GetCustomerOrdersAsync([Required] Guid customerId)
+	public async Task<ContentResult> GetCustomerOrdersAsync([Required] Guid customerId)
 	{
 		var result = await _getCustomerOrdersUseCase.HandleAsync(customerId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 }

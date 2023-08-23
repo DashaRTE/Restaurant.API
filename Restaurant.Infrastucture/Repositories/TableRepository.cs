@@ -1,38 +1,56 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using Restaurant.Infrastucture.Entities;
-using Restaurant.Infrastucture.Repositories.Interfaces;
 
 namespace Restaurant.Infrastucture.Repositories;
 
 public class TableRepository : ITableRepository
 {
 	private readonly DataContext _dataContext;
+	private readonly IMapper _mapper;
 
-	public TableRepository(DataContext context)
+	public TableRepository(DataContext context, IMapper mapper)
 	{
 		_dataContext = context;
+		_mapper = mapper;
 	}
 
-	public async Task<List<Entities.Table>> GetTablesAsync()
+	public async Task<IList<TableDto>> GetTablesAsync() =>
+		_mapper.Map<IList<Table>, IList<TableDto>>(await _dataContext.Tables.ToListAsync());
+
+	public async Task<TableDto?> GetTableByIdAsync(Guid tableId) =>
+		_mapper.Map<Table?, TableDto?>(await _dataContext.Tables.FindAsync(tableId));
+
+
+	public async Task<TableDto?> GetTableOrdersAsync(Guid tableId)
 	{
-		return await _dataContext.Tables.ToListAsync();
+		var table = await _dataContext.Tables.Include(table => table.Orders.Where(order => order.Price > 100))
+			.FirstOrDefaultAsync(table => table.Id == tableId);
+
+		return _mapper.Map<Table?, TableDto?>(table);
 	}
 
-	public async Task<Entities.Table> CreateTableAsync(int Number)
+	public async Task<TableDto> CreateTableAsync(int number)
 	{
-		var table = new Entities.Table() { Number = Number };
+		var table = new Table { Number = number };
+
 		await _dataContext.Tables.AddAsync(table);
+
 		await _dataContext.SaveChangesAsync();
-		return table;
+
+		return _mapper.Map<Table, TableDto>(table);
 	}
 
-	public async Task<Entities.Table?> EditTableAsync(Guid TableId, int Number)
+
+	public async Task<TableDto?> EditTableAsync(Guid tableId, int number)
 	{
-		var table = await _dataContext.Tables.FindAsync(TableId);
+		var table = await _dataContext.Tables.FindAsync(tableId);
+
 		if (table is not null)
 		{
-			table.Number = Number;
+			table.Number = number;
 			table.ModifiedDate = DateTime.UtcNow;
 
 			_dataContext.Entry(table).State = EntityState.Modified;
@@ -40,40 +58,18 @@ public class TableRepository : ITableRepository
 			await _dataContext.SaveChangesAsync();
 		}
 
-		return table;
+		return _mapper.Map<Table?, TableDto?>(table);
 	}
 
-	public async Task DeleteTableAsync(Guid TableId)
+	public async Task DeleteTableAsync(Guid tableId)
 	{
-		var table = await _dataContext.Tables.FindAsync(TableId);
+		var table = await _dataContext.Tables.FindAsync(tableId);
+
 		if (table is not null)
 		{
 			_dataContext.Tables.Remove(table);
+
 			await _dataContext.SaveChangesAsync();
 		}
-	}
-
-	public async Task<Entities.Table?> GetTableByIdAsync(Guid TableId)
-	{
-		var table = await _dataContext.Tables.FindAsync(TableId);
-		if (table is not null)
-		{
-			return table;
-		}
-
-		return null;
-	}
-
-	public async Task<Entities.Table?> GetTableOrdersAsync(Guid TableId)
-	{
-		var table = await _dataContext.Tables.Include(table => table.Orders.Where(order => order.Price > 100))
-			.FirstOrDefaultAsync(table => table.Id == TableId);
-
-		if (table is not null)
-		{
-			return table;
-		}
-
-		return null;
 	}
 }

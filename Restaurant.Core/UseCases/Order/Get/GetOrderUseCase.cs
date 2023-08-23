@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Order.Get;
@@ -11,10 +12,10 @@ public class GetOrderUseCase
 		_orderRepository = orderRepository;
 	}
 
-	public async Task<Result<List<Infrastucture.Entities.Order>>> HandleAsync()
+	public async Task<Result<IList<OrderDto>>> HandleAsync()
 	{
-		var result = await _orderRepository.GetOrdersAsync();
+		var orders = await _orderRepository.GetOrdersAsync();
 
-		return new() { StatusCode = HttpStatusCode.OK, Message = "Get orders", Data = result };
+		return new() { StatusCode = HttpStatusCode.OK, Message = "Get orders", Data = orders };
 	}
 }

@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases;
@@ -12,7 +13,7 @@ public class GetCustomerUseCase
 		_customerRepository = customerRepository;
 	}
 
-	public async Task<Result<List<Infrastucture.Entities.Customer>>> HandleAsync()
+	public async Task<Result<IList<CustomerDto>>> HandleAsync()
 	{
 		var customers = await _customerRepository.GetCustomersAsync();
 

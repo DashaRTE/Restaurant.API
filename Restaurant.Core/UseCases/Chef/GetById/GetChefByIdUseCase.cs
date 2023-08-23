@@ -1,4 +1,5 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Dto;
+using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Chef.GetById;
@@ -11,15 +12,15 @@ public class GetChefByIdUseCase
 		_chefRepository = chefRepository;
 	}
 
-	public async Task<Result<Infrastucture.Entities.Chef>> HandleAsync(Guid chefId)
+	public async Task<Result<ChefDto>> HandleAsync(Guid chefId)
 	{
-		var result = await _chefRepository.GetChefByIdAsync(chefId);
+		var chef = await _chefRepository.GetChefByIdAsync(chefId);
 
-		if (result is null)
+		if (chef is null)
 		{
 			return new() { StatusCode = HttpStatusCode.NotFound, Message = "Not found"};
 		}
 
-		return new() { StatusCode = HttpStatusCode.OK, Message = "Get chef by id", Data = result };
+		return new() { StatusCode = HttpStatusCode.OK, Message = "Get chef by id", Data = chef };
 	}
 }

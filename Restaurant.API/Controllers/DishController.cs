@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant.Core;
-using Restaurant.Infrastucture.Entities;
 using System.ComponentModel.DataAnnotations;
 using Restaurant.Core.UseCases.Dish.Get;
 using Restaurant.Core.UseCases.Dish.Create;
 using Restaurant.Core.UseCases.Dish.Edit;
 using Restaurant.Core.UseCases.Dish.Delete;
 using Restaurant.Core.UseCases.Dish.GetById;
+using System.Text.Json;
 
 namespace Restaurant.API.Controllers;
 
@@ -22,7 +22,11 @@ public class DishController
 	private readonly DeleteDishUseCase _deleteDishUseCase;
 	private readonly GetDishByIdUseCase _getDishByIdUseCase;
 
-	public DishController(GetDishUseCase getDishUseCase, CreateDishUseCase createDishUseCase, EditDishUseCase editDishUseCase, DeleteDishUseCase deleteDishUseCase, GetDishByIdUseCase getDishByIdUseCase)
+	public DishController(GetDishUseCase getDishUseCase,
+		CreateDishUseCase createDishUseCase, 
+		EditDishUseCase editDishUseCase, 
+		DeleteDishUseCase deleteDishUseCase, 
+		GetDishByIdUseCase getDishByIdUseCase)
 	{
 		_getDishUseCase = getDishUseCase;
 		_createDishUseCase = createDishUseCase;
@@ -32,9 +36,22 @@ public class DishController
 	}
 
 	[HttpGet, Route("get")]
-	public async Task<Result<List<Dish>>> GetDishesAsync()
+	public async Task<ContentResult> GetDishesAsync()
 	{
-		return await _getDishUseCase.HandleAsync();
+		var result = await _getDishUseCase.HandleAsync();
+
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json, ContentType = "application/json", StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 
 	[HttpPost, Route("create")]
@@ -62,10 +79,23 @@ public class DishController
 	}
 
 	[HttpGet, Route("get/{customerId}")]
-	public async Task<Result<Dish>> GetDishByIdAsync([Required] Guid dishId)
+	public async Task<ContentResult> GetDishByIdAsync([Required] Guid dishId)
 	{
 		var result = await _getDishByIdUseCase.HandleAsync(dishId);
 
-		return result;
+		var json = JsonSerializer.Serialize(result.Data, new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+			WriteIndented = true,
+		});
+
+		var content = new ContentResult()
+		{
+			Content = json,
+			ContentType = "application/json",
+			StatusCode = (int)result.StatusCode
+		};
+
+		return content;
 	}
 }

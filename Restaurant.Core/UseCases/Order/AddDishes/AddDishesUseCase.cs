@@ -1,4 +1,4 @@
-﻿using Restaurant.Infrastucture.Repositories.Interfaces;
+﻿using Restaurant.Core.Interfaces;
 using System.Net;
 
 namespace Restaurant.Core.UseCases.Order.AddDishes;
@@ -31,6 +31,6 @@ public class AddDishesUseCase
 
 		await _orderRepository.AddDishesAsync(request.OrderId, request.DishId);
 
-		return new Result() { StatusCode = HttpStatusCode.Created, Message = "Add dishes to order" };
+		return new() { StatusCode = HttpStatusCode.Created, Message = "Add dishes to order" };
 	}
 }
